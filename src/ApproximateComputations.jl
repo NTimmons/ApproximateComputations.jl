@@ -235,10 +235,7 @@ function FilterFunctionList(arr;
 end
 
 function GetFastestAcceptable(arr; targetMode="Time", meanErrorLimit=99999.0, maxTimeLimit=999999.0, verbose=true)
-    printText(x) = println(x)
-    if(!verbose)
-        printText(x) = nothing
-    end
+    printText(x) = verbose ? println(x) : nothing
     
     # Filter out results which have too much error or take too long
     shortlist = FilterFunctionList(arr, maxMeanError=meanErrorLimit, maxMedianTime=maxTimeLimit)
@@ -602,8 +599,8 @@ function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; s
 
     typelist          = [Float64] #[Float32, Float64]
 
-    orderFunArray     = [()->9, ()->11] #, ()->7, ()->9, ()->11, ()->13, ()->15, ()->17, ()->19]
-    orderFunPateArray = [()->3, ()->5] #, ()->7]
+    orderFunArray     = [()->7, ()->9, ()->11, ()->13, ()->15, ()->17, ()->19]
+    orderFunPateArray = [()->2, ()->3, ()->4, ()->5]
 
     polynomialLet_Enabled     = true
     polynomialEval_Enabled    = false
@@ -630,7 +627,6 @@ function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; s
     if(polynomialLet_Enabled)        
         for t in typelist
             for orderFunction in orderFunArray
-                    println("Generating polynomial (Let) for order:$(orderFunction())")
                     newFunc      = GetApproximatePolyFunction(targetfunction, inputs64, highResResults, orderFunction, t )
                     errorresults = TestFunction(newFunc, targetfunction, convert(Array{t},inputs64))
 
@@ -649,7 +645,6 @@ function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; s
     if(polynomialEval_Enabled)
         for t in typelist
             for orderFunction in orderFunArray
-                    println("Generating polynomial (Eval) for order:$(orderFunction())")
                     newFunc      = GetApproximatePolyFunction_Eval(targetfunction, inputs64, highResResults, orderFunction, t )
                     errorresults = TestFunction(newFunc, targetfunction, convert(Array{t},inputs64))
 
