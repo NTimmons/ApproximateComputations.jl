@@ -1,6 +1,6 @@
 # ApproximateComputations.jl
 
-[![Build Status](https://travis-ci.org/NTimmons/ApproximateComputations.jl.svg?branch=master)](https://travis-ci.org/NTimmons/ApproximateComputations.jl)
+[![Build Status](https://travis-ci.org/NTimmons/ApproximateComputations.jl.svg?branch=master)](https://travis-ci.org/NTimmons/ApproximateComputations.jl)[![codecov](https://codecov.io/gh/NTimmons/ApproximateComputations.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/NTimmons/ApproximateComputations.jl)
 
 ApproximateComputations.jl is a library for the automatic applicaiton approximate computation software techniques to existing code. In this context, software approximation is where we perform some transformation to existing code to reduce the accuracy for gain in performance.
 
