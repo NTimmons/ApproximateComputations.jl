@@ -20,24 +20,6 @@ This package is maintained by Nicholas Timmons under an MIT license.
 Any queries please feel free to get in contact by email: ngt26 at cam.ac.uk\n We hope this package is useful!")
 
 
-# Exporting the approximation wrapper type
-export Approximation, Get
-
-# Exporting function generation results types
-export GeneratedFunctionType, ErrorResultsContainer
-
-# Exporting getters for function result type
-export GetAbsoluteError, GetMeanDifference, GetMedianDifference, GetMedianBenchmarkTime, GetMeanBenchmarkTime
-
-# Exporting function selection functions
-export GetFastestAcceptable, FilterFunctionList, GetFunctionName
-
-# Export function visualisation plotting functions
-export PlotApproximationFunctionResults, PlotApproximationFunctionDiff, PlotApproximationFunctionDiffHist, PlotMedianError, PlotMedianRuntime, PlotRuntimeErrorPair
-
-# Export main function for generating replacement functions
-export GenerateAllApproximationFunctions
-
 struct ErrorResultsContainer    
     absDif::Array{Float64,1}
     absError::Float64
