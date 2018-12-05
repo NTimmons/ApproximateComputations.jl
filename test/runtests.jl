@@ -23,6 +23,8 @@ end
 	
 	@test UpdateEnvironmentForFunction(little) == nothing
 	
+	littletree = little(Variable(123))
+	
 	@test EmulateTree(littletree) == 251
 	
 	ReplaceSubTree(littletree, Variable(0), 1)
