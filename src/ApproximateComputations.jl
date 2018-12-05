@@ -26,6 +26,6 @@ export GenerateAllApproximationFunctions
 
 ### AST Replacement Exports
 export Operator, Variable, TreeMember, ResetGlobalID, GetGlobalID
-export EmulateTree, FullUnwrap, UnwrapTree, WrapTree, ReplaceSubTree, GetAllTrees, UpdateEnvironmentForFunction, print
-
+export EmulateTree, FullUnwrap, UnwrapTree, WrapTree, ReplaceSubTree, GetAllTrees, UpdateEnvironmentForFunction
+export printtree
 end
