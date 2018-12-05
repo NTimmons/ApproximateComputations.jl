@@ -35,7 +35,7 @@ end
 
 # Debug function to view the tree.
 
-function print(node::TreeMember, level = 0)
+function printtree(node::TreeMember, level = 0)
     outstr = "|"
     if(level > 0)
         for i in 1:level
