@@ -48,13 +48,13 @@ function printtree(node::TreeMember, level = 0)
         for leaf in node.leaves        
             if(leaf != nothing)
                 if(typeof(leaf) <: TreeMember)
-                    print(leaf, level+1)
+                    printtree(leaf, level+1)
                 else
                     varindent ="|"
                     for i in 1:level+1
                         varindent = string(varindent,"  |")
                     end
-                    print(string(varindent, leaf, "\n"))
+                    printtree(string(varindent, leaf, "\n"))
                 end
             end
         end
