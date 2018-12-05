@@ -54,7 +54,7 @@ function printtree(node::TreeMember, level = 0)
                     for i in 1:level+1
                         varindent = string(varindent,"  |")
                     end
-                    printtree(string(varindent, leaf, "\n"))
+                    print(string(varindent, leaf, "\n"))
                 end
             end
         end
