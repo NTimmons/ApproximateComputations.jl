@@ -1,6 +1,9 @@
 using Test
 using ApproximateComputations
 
+using ImportAll
+@importall Base
+
 @testset "Approximation Type" begin
 ## Approximation Tests
  a = Approximation(6.0)
@@ -13,4 +16,16 @@ using ApproximateComputations
  
  @test typeof(Get(a)) == Float64
 
+end
+
+@testset "AST Approximation" begin
+	little(x)  = (x * 2) + 5
+	
+	@test UpdateEnvironmentForFunction(little) == nothing
+	
+	@test EmulateTree(littletree) == 251
+	
+	ReplaceSubTree(littletree, Variable(0), 1)
+	
+	@test EmulateTree(littletree) == 5
 end
