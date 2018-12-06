@@ -61,6 +61,10 @@ function printtree(node::TreeMember, level = 0)
     else
         println(string(outstr, node.var, "(id:$(node.id))"))
     end
+	
+	if(level == 0)
+		println("\n")
+	end
 end
 
 
@@ -100,6 +104,22 @@ function GetOverrideFunctionList(func)
     callsymbols
 end
 
++(x::TreeMember, y::TreeMember) = Operator(+, x,y)
++(x::TreeMember, y) 			= Operator(+, x,y)
++(x, y::TreeMember) 			= Operator(+, x,y)
+
+-(x::TreeMember, y::TreeMember) = Operator(-, x,y)
+-(x::TreeMember, y) 			= Operator(-, x,y)
+-(x, y::TreeMember) 			= Operator(-, x,y)
+
+*(x::TreeMember, y::TreeMember) = Operator(*, x,y)
+*(x::TreeMember, y) 			= Operator(*, x,y)
+*(x, y::TreeMember) 			= Operator(*, x,y)
+
+/(x::TreeMember, y::TreeMember) = Operator(/, x,y)
+/(x::TreeMember, y) 			= Operator(/, x,y)
+/(x, y::TreeMember) 			= Operator(/, x,y)
+
 function BuildOverrideFromArray(ovr)
     for op = ovr
         eval(quote
@@ -120,6 +140,10 @@ function BuildOverrideFromArray(ovr)
             end
         end)
     end
+	
+	for op in ovr
+		println("$(op[1]) - declared with $(op[2]) inputs")
+	end
 end
 
 function UpdateEnvironmentForFunction(func)
@@ -137,10 +161,10 @@ function GetAllTrees(node)
         for leaf in node.leaves        
             if(leaf != nothing)                
                 if(typeof(leaf) <: TreeMember)
-                    childarray = GetAllTrees(leaf)
+                    childarray = copy(GetAllTrees(leaf))
                     treelist = vcat(treelist, childarray)
                 else
-                    push!(treelist, Variable(leaf))
+                    push!(treelist, Variable(copy(leaf)))
                 end
                 
             end
@@ -192,6 +216,13 @@ end
 
 # Function to execute an AST
 
+SymbolDict = Dict()
+function SetSymbolValue(name, value)
+	SymbolDict[name] = value
+end
+
+ClearSymbolDict() = SymbolDict = Dict()
+
 function EmulateTree(node)   
     result = 0     
     if(typeof(node) == Operator)
@@ -205,11 +236,52 @@ function EmulateTree(node)
     end    
     
     if(typeof(result) == Symbol)
-        println("Result is a symbol... $(result)")
-        result = @eval ($result)
-        println(typeof(result))
-        println("Result is a $(typeof(result))... $(result)")
+        #println("Result is a symbol... $(result)")
+        result = SymbolDict[result]
+        #println(typeof(result))
+        #println("Result is a $(typeof(result))... $(result)")
     end
     
     result
+end
+
+
+function InArray(arr, x)
+	for v in arr
+		if(v == x)
+			return true
+		end
+	end
+	
+	return false
+end
+
+function GetAllLeaves(nodes)
+    variables = []
+    for v in nodes
+        if(typeof(v) != Operator)
+			if( !InArray(variables, v) )
+				push!(variables, v)
+			end
+        end
+    end
+    variables
+end
+
+function GetAllSymbols(node)
+    GetAllSymbolsList(GetAllLeaves(node))
+end
+
+function GetAllSymbolsList(leafArray)
+    variables = []
+    for v in leafArray
+        if(typeof(v) == Variable)
+            if(typeof(v.var) == Symbol)
+                push!(variables, v.var)
+            end
+        elseif typeof(v) == Symbol
+            push!(variables, v)
+        end 
+    end
+    variables
 end
