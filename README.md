@@ -89,6 +89,8 @@ little(123)
 ```
 
 If we want to modify the tree we can do so by supplying a replacement sub-tree and the id of the part of the tree that is to be replaced.
+
+In this case we are changing the function from  `(123 * 2) + 5` to `(0 * 2) + 5`
 ```
 ReplaceSubTree(littletree, Variable(0), 1)
 printtree(littletree)
