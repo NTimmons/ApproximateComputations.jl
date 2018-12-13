@@ -223,11 +223,17 @@ end
 
 ClearSymbolDict() = SymbolDict = Dict()
 
-function EmulateTree(node)   
-    result = 0     
+function EmulateTree(node, localSymbolDict = Dict())   
+    result = 0    
+
+	
     if(typeof(node) == Operator)
         operation = node.op
-        emulatedInputs = EmulateTree.(node.leaves)
+		emulatedInputs = []
+		for leaf in node.leaves
+			push!(emulatedInputs, EmulateTree(leaf, localSymbolDict) )
+		end
+        #emulatedInputs = EmulateTree.(node.leaves, localSymbolDict)
         result = operation(emulatedInputs...)     
     elseif (typeof(node) == Variable)
         result = node.var
@@ -236,10 +242,17 @@ function EmulateTree(node)
     end    
     
     if(typeof(result) == Symbol)
-        #println("Result is a symbol... $(result)")
-        result = SymbolDict[result]
-        #println(typeof(result))
-        #println("Result is a $(typeof(result))... $(result)")
+		if(haskey(localSymbolDict, result) )
+			result = localSymbolDict[result]
+		elseif(haskey(SymbolDict, result))
+			result = SymbolDict[result]
+		else
+			@show localSymbolDict
+			@show SymbolDict
+			println("ERROR: Undefined symbol: $(result)")
+			println("ERROR: Proceeding with nil value...")
+			result = 0
+		end
     end
     
     result
