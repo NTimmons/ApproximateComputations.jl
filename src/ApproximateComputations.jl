@@ -2,6 +2,7 @@ module ApproximateComputations
 
 include("FittingFunctionApproximation.jl")
 include("ASTReplacementApproximation.jl")
+include("LoopPerforation.jl")
 
 
 ### Fitting functions exports
@@ -23,6 +24,9 @@ export PlotApproximationFunctionResults, PlotApproximationFunctionDiff, PlotAppr
 # Export main function for generating replacement functions
 export GenerateAllApproximationFunctions
 
+# Exporting Loop Perforation function and helpers
+export LoopPerforation
+export OnlyEvenIterations, OnlyOddIterations, ClipFrontAndBack, OnlyFirstHalf, OnlySecondHalf
 
 ### AST Replacement Exports
 export Operator, Variable, TreeMember, ResetGlobalID, GetGlobalID

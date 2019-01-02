@@ -31,3 +31,21 @@ end
 	
 	@test EmulateTree(littletree) == 5
 end
+
+@testset "Loop Perforation" begin
+	expr = quote
+				function newfunc()
+					aa = 0
+					for i in 1:10
+						aa = aa + 1
+					end
+					aa
+				end
+			end
+	
+	LoopAllExpr(expr, UnitRange, ClipFrontAndBackRange)
+	eval(expr)
+	@test newfunc() == 8
+	
+
+end
