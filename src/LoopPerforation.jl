@@ -7,7 +7,7 @@
 function LoopPerforation( ex, looptype, replacementfn )
     for i in 1:length(ex.args)
         if(typeof(ex.args[i]) == Expr && length(ex.args[i].args) > 1)
-            LoopAllExpr(ex.args[i], looptype, replacementfn)
+            LoopPerforation(ex.args[i], looptype, replacementfn)
         end
         
         if(typeof(ex.args[i]) == Expr && ex.args[i].head == :for)
