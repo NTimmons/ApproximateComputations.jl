@@ -43,7 +43,7 @@ end
 				end
 			end
 	
-	LoopAllExpr(expr, UnitRange, ClipFrontAndBackRange)
+	LoopPerforation(expr, UnitRange, ClipFrontAndBackRange)
 	eval(expr)
 	@test newfunc() == 8
 
