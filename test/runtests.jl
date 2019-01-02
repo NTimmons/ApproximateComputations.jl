@@ -46,6 +46,5 @@ end
 	LoopAllExpr(expr, UnitRange, ClipFrontAndBackRange)
 	eval(expr)
 	@test newfunc() == 8
-	
 
 end
