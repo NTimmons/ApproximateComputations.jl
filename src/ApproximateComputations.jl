@@ -3,6 +3,7 @@ module ApproximateComputations
 include("FittingFunctionApproximation.jl")
 include("ASTReplacementApproximation.jl")
 include("LoopPerforation.jl")
+include("Memoisation.jl")
 
 
 ### Fitting functions exports
@@ -27,6 +28,9 @@ export GenerateAllApproximationFunctions
 # Exporting Loop Perforation function and helpers
 export LoopPerforation
 export OnlyEvenIterations, OnlyOddIterations, ClipFrontAndBack, OnlyFirstHalf, OnlySecondHalf
+
+# Exporting Memoisation
+export TrendingMemoisation, ApproximateHashingMemoise
 
 ### AST Replacement Exports
 export Operator, Variable, TreeMember, ResetGlobalID, GetGlobalID
