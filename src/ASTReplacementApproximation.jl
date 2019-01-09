@@ -75,6 +75,7 @@ end
 # the functions we are trying to evaluate.
 
 function GetOverrideFunctionList(func)
+    display(func)
     ast = Base.uncompressed_ast(first(methods(func)))
     callsymbols = []
     for line in ast.code
@@ -122,7 +123,7 @@ end
 
 function BuildOverrideFromArray(ovr)
     for op = ovr
-        eval(quote
+        display(eval(quote
             if($(op[2] == 1))
                     $(op[1])(x::TreeMember)       = Operator(($(op[1])), x)
             elseif($(op[2] == 2))
@@ -138,7 +139,7 @@ function BuildOverrideFromArray(ovr)
                     $(op[1])(x::TreeMember, y, z::TreeMember) = Operator(($(op[1])), x,y,z)
                     $(op[1])(x::TreeMember, y::TreeMember, z) = Operator(($(op[1])), x,y,z)                  
             end
-        end)
+        end))
     end
 	
 	for op in ovr
@@ -146,11 +147,51 @@ function BuildOverrideFromArray(ovr)
 	end
 end
 
+function GetOverrides(func)
+    overridefunctions = GetOverrideFunctionList(func)
+    override = tuple(overridefunctions...)
+end
+
 function UpdateEnvironmentForFunction(func)
     overridefunctions = GetOverrideFunctionList(func)
     override = tuple(overridefunctions...)
     BuildOverrideFromArray(override)
 end
+
+function GetConstructionFunction()
+    (quote
+        function BuildOverrideFromArray_Gen(ovr)
+            for op = ovr
+                display(eval(quote
+                    if($(op[2] == 1))
+                            $(op[1])(x::TreeMember)       = Operator(($(op[1])), x)
+                    elseif($(op[2] == 2))
+                            $(op[1])(x::TreeMember, y)    = Operator(($(op[1])), x,y)
+                            $(op[1])(x, y::TreeMember)    = Operator(($(op[1])), x,y)
+                            $(op[1])(x::TreeMember, y::TreeMember)    = Operator(($(op[1])), x,y)
+                    elseif($(op[2] == 3))
+                            $(op[1])(x::TreeMember, y, z) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x, y::TreeMember, z) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x, y, z::TreeMember) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x::TreeMember, y::TreeMember, z::TreeMember) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x, y::TreeMember, z::TreeMember) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x::TreeMember, y, z::TreeMember) = Operator(($(op[1])), x,y,z)
+                            $(op[1])(x::TreeMember, y::TreeMember, z) = Operator(($(op[1])), x,y,z)                  
+                    end
+                end))
+            end
+
+            for op in ovr
+                println("$(op[1]) - declared with $(op[2]) inputs")
+            end
+        end
+    end)
+end
+
+macro BuildOverrideFromArray()
+	:(eval(GetConstructionFunction()))
+end
+
 
 # Tree Manipulation Functions
 
