@@ -37,7 +37,6 @@ export Operator, Variable, TreeMember, ResetGlobalID, GetGlobalID
 export EmulateTree, FullUnwrap, UnwrapTree, WrapTree, ReplaceSubTree, GetAllTrees, UpdateEnvironmentForFunction
 export printtree, SetSymbolValue, ClearSymbolDict
 export GetAllLeaves, GetAllSymbols, GetAllSymbolsList
-export GetOverrides
-export GetConstructionFunction
-export @BuildOverrideFromArray
+export GetOverrides, GetConstructionFunction, @BuildOverrideFromArray
+export ReplaceConstantsWithVariables, ReplaceTypeOfSpecifiedVariable, ReplaceAllVariablesOfType
 end

@@ -23,14 +23,17 @@ mutable struct Variable <: TreeMember
     id
     Variable(x) = new(x, GetGlobalID())
 end
+
 mutable struct Operator <: TreeMember
     op
     leaves
     id
-    Operator(x::Variable) = new(identity, [x]      , GetGlobalID())
-    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID())
-    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID())
-    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID())
+	result
+	precomputed::Bool
+    Operator(x::Variable) = new(identity, [x]      , GetGlobalID(), "NotComputedYet", false)
+    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID(), "NotComputedYet", false)
+    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID(), "NotComputedYet", false)
+    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID(), "NotComputedYet", false)
 end
 
 # Debug function to view the tree.
@@ -44,7 +47,7 @@ function printtree(node::TreeMember, level = 0)
     end
     
     if(typeof(node) == Operator)
-        println(string(outstr, node.op, "(id:$(node.id))"))
+        println(string(outstr, "Function(", node.op, ") - (id:$(node.id)) - Result:", node.result))
         for leaf in node.leaves        
             if(leaf != nothing)
                 if(typeof(leaf) <: TreeMember)
@@ -54,12 +57,12 @@ function printtree(node::TreeMember, level = 0)
                     for i in 1:level+1
                         varindent = string(varindent,"  |")
                     end
-                    print(string(varindent, leaf, "\n"))
+                    print(string(varindent, "Const ", typeof(leaf), "(", leaf, ")", "\n"))
                 end
             end
         end
     else
-        println(string(outstr, node.var, "(id:$(node.id))"))
+        println(string(outstr, typeof(node.var), "(", node.var, ") - (id:$(node.id))"))
     end
 	
 	if(level == 0)
@@ -112,6 +115,7 @@ end
 -(x::TreeMember, y::TreeMember) = Operator(-, x,y)
 -(x::TreeMember, y) 			= Operator(-, x,y)
 -(x, y::TreeMember) 			= Operator(-, x,y)
+-(x::TreeMember) 				= Operator(-, x)
 
 *(x::TreeMember, y::TreeMember) = Operator(*, x,y)
 *(x::TreeMember, y) 			= Operator(*, x,y)
@@ -267,7 +271,6 @@ ClearSymbolDict() = SymbolDict = Dict()
 function EmulateTree(node, localSymbolDict = Dict())   
     result = 0    
 
-	
     if(typeof(node) == Operator)
         operation = node.op
 		emulatedInputs = []
@@ -275,7 +278,8 @@ function EmulateTree(node, localSymbolDict = Dict())
 			push!(emulatedInputs, EmulateTree(leaf, localSymbolDict) )
 		end
         #emulatedInputs = EmulateTree.(node.leaves, localSymbolDict)
-        result = operation(emulatedInputs...)     
+        result = operation(emulatedInputs...)   
+		node.result = result		
     elseif (typeof(node) == Variable)
         result = node.var
     else
@@ -339,3 +343,61 @@ function GetAllSymbolsList(leafArray)
     end
     variables
 end
+
+
+
+##################
+## Tree Editing Functions
+##
+######
+function ReplaceAllVariablesOfType(node::TreeMember, targettype, replacementtype) 
+    if(typeof(node) == Operator)
+        for i in 1:length(node.leaves)
+            if(node.leaves[i] != nothing)
+                if(typeof(node.leaves[i]) == Operator)
+                    ReplaceAllVariablesOfType(node.leaves[i], targettype, replacementtype)
+                elseif (typeof(node.leaves[i]) == Variable)
+                    if(typeof(node.leaves[i].var)==targettype)
+                       node.leaves[i].var =  replacementtype(node.leaves[i].var)
+                    end
+                end
+            end
+        end
+    end    
+end
+
+function ReplaceTypeOfSpecifiedVariable(node::TreeMember, id, replacementtype)
+    if(typeof(node) == Operator)
+        for i in 1:length(node.leaves)
+            if(node.leaves[i] != nothing)
+                if(typeof(node.leaves[i]) == Operator)
+                    ReplaceTypeOfSpecifiedVariable(node.leaves[i], id, replacementtype)
+                elseif (typeof(node.leaves[i]) == Variable)
+                    if( node.leaves[i].id== id)
+                        @show "Replacing!"
+                       node.leaves[i].var =  replacementtype(node.leaves[i].var)
+                    end
+                end
+            end
+        end
+    end    
+end
+
+function ReplaceConstantsWithVariables(node::TreeMember) 
+    if(typeof(node) == Operator)
+        for i in 1:length(node.leaves)
+            if(node.leaves[i] != nothing)
+                if(typeof(node.leaves[i]) <: TreeMember)
+                    ReplaceConstantsWithVariables(node.leaves[i])
+                else
+                    node.leaves[i] = Variable(node.leaves[i])
+                end
+            end
+        end
+    end    
+end
+
+
+
+
+
