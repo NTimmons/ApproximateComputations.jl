@@ -41,5 +41,5 @@ export GetOverrides, GetConstructionFunction, @BuildOverrideFromArray
 export ReplaceConstantsWithVariables, ReplaceTypeOfSpecifiedVariable, ReplaceAllVariablesOfType
 export InArray, GetOperatorIDs, GetOperators
 export GetResultForID, SetResultForID
-
+export GetErrorInTree
 end

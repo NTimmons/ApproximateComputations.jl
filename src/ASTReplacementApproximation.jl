@@ -462,5 +462,84 @@ function SetResultForID(node, id, val)
     end
 end
 
+################
+## Helper to compute the error difference of two differently typed trees
+##
+#####
+
+function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues, hiprec_inputValues)
+    
+    outputTree = deepcopy(loprecTree)
+    
+    # Copy the trees for each result instance
+    hiprec_testarray = []
+    for v in hiprec_inputValues
+        push!(hiprec_testarray, ( (inputSymbol,v) , deepcopy(hiprecTree) ) ) 
+    end
+    
+    loprec_testarray = []
+    for v in loprec_inputValues
+        push!(loprec_testarray, ( (inputSymbol,v) , deepcopy(loprecTree) ) ) 
+    end
+
+    # Calculate the output results
+    for i in 1:length(hiprec_testarray)
+        d = Dict(hiprec_testarray[i][1][1]=>hiprec_testarray[i][1][2])
+        EmulateTree(hiprec_testarray[i][2], d )
+    end
+
+    for i in 1:length(loprec_testarray)
+        d = Dict(loprec_testarray[i][1][1]=>loprec_testarray[i][1][2])
+        EmulateTree(loprec_testarray[i][2], d )
+    end
+    
+    # Get the list of operator IDs
+    operatorlist = GetOperators(hiprec_testarray[2][2])
+    ids = GetOperatorIDs(hiprec_testarray[2][2])
+    
+    # Calculate the min,max, median and mean error for each.
+    nodeerrors = []
+    sumres     = [0.0,0.0,0.0,0.0]
+    maxmax     = 0.0
+    for id in ids    
+        targetID = id
+        hiprecres = []
+        for entry in hiprec_testarray
+            res = GetResultForID(entry[2], targetID)
+            push!(hiprecres, res)
+        end
+
+        loprecres = []
+        for entry in loprec_testarray
+            res = GetResultForID(entry[2], targetID)
+            push!(loprecres, res)
+        end
+
+
+        dif = abs.(hiprecres - Float64.(loprecres))
+        minval  = minimum(dif)
+        maxval  = maximum(dif)
+        medval  = median(dif)
+        meanval = median(dif)
+
+        push!(nodeerrors, (id, minval, maxval, medval, meanval))
+        sumres[1] += minval
+        sumres[2] += maxval
+        sumres[3] += medval
+        sumres[4] += meanval
+
+        maxmax = max(maxval, maxmax)
+    end
+    
+    for data in nodeerrors
+        maxval = data[3]
+        id = data[1]
+        SetResultForID( outputTree, id, maxval )
+    end
+
+    outputTree
+end
+
+
 
 
