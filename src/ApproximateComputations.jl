@@ -42,4 +42,7 @@ export ReplaceConstantsWithVariables, ReplaceTypeOfSpecifiedVariable, ReplaceAll
 export InArray, GetOperatorIDs, GetOperators
 export GetResultForID, SetResultForID
 export GetErrorInTree
+export GetSubTree
+export ToString
+export PlotASTError
 end

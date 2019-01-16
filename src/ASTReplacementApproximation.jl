@@ -3,6 +3,8 @@
 # Our main types and wrappers:
 # ############################
 
+using Plots.PlotMeasures
+
 global g_ID = 0
 function GetGlobalID()
    global g_ID
@@ -29,14 +31,16 @@ mutable struct Operator <: TreeMember
     leaves
     id
 	result
-    Operator(x::Variable) = new(identity, [x]      , GetGlobalID(), "NoStoredData")
-    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID(), "NoStoredData")
-    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID(), "NoStoredData")
-    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID(), "NoStoredData")
+    Operator(x::Variable) = new(identity, [x]      , GetGlobalID(), "NoStoredData"  )
+    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID(), "NoStoredData"  )
+    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID(), "NoStoredData"  )
+    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID(), "NoStoredData"  )
 end
 
-# Debug function to view the tree.
-
+######################
+## Debug function to view the tree.
+##
+########
 function printtree(node::TreeMember, level = 0)
     outstr = "|"
     if(level > 0)
@@ -69,7 +73,40 @@ function printtree(node::TreeMember, level = 0)
 	end
 end
 
+function ToString(node::TreeMember, level = 0)
+    outstr = "|"
+    if(level > 0)
+        for i in 1:level
+            outstr = string(outstr,"~~~|")
+        end
+    end
+    
+	s = ""
+    if(typeof(node) == Operator)
+        s = string(s, (string(outstr, "Function(", node.op, ")")), "\n")
+        for leaf in node.leaves        
+            if(leaf != nothing)
+                if(typeof(leaf) <: TreeMember)
+                    s = string(s, ToString(leaf, level+1))
+                else
+                    varindent ="|"
+                    for i in 1:level+1
+                        varindent = string(varindent,"  |")
+                    end
+                    s = string(s,(string(varindent, "Const ", typeof(leaf), "(", leaf, ")", "\n")))
+                end
+            end
+        end
+    else
+        s = string(s, (string(outstr, typeof(node.var), "(", node.var, ")")), "\n")
+    end
+	
+	if(level == 0)
+		s = string(s,("\n"))
+	end
 
+	s
+end
 
 # Extending the environment to allow for operators to work on wrapped types:
 # ##########################################################################
@@ -163,9 +200,13 @@ end
 
 function GetConstructionFunction()
     (quote
-        function BuildOverrideFromArray_Gen(ovr)
+        function BuildOverrideFromArray_Gen(ovr; verbose=true)
+			disp(x) = x
+			if(verbose)
+				disp = display
+			end
             for op = ovr
-                display(eval(quote
+                disp(eval(quote
                     if($(op[2] == 1))
                             $(op[1])(x::TreeMember)       = Operator(($(op[1])), x)
                     elseif($(op[2] == 2))
@@ -184,9 +225,11 @@ function GetConstructionFunction()
                 end))
             end
 
-            for op in ovr
-                println("$(op[1]) - declared with $(op[2]) inputs")
-            end
+			if(verbose)
+				for op in ovr
+					println("$(op[1]) - declared with $(op[2]) inputs")
+				end
+			end
         end
     end)
 end
@@ -195,9 +238,10 @@ macro BuildOverrideFromArray()
 	:(eval(GetConstructionFunction()))
 end
 
-
-# Tree Manipulation Functions
-
+########################################
+## Tree Manipulation Functions
+##
+########
 function GetAllTrees(node)
     treelist = []
     if(typeof(node) == Operator)  
@@ -217,6 +261,15 @@ function GetAllTrees(node)
         treelist = vcat(treelist, node)
     end    
     treelist
+end
+
+function GetSubTree(tree, id)
+	trees = GetAllTrees(tree)
+	for t in trees
+		if(t.id == id)
+			return t
+		end
+	end
 end
 
 HasId(x::TreeMember, target ) = x.id == target
@@ -466,7 +519,7 @@ end
 ##
 #####
 
-function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues, hiprec_inputValues)
+function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues, hiprec_inputValues; fetchtimeline = false)
     
     outputTree = deepcopy(loprecTree)
     
@@ -500,6 +553,9 @@ function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues,
     nodeerrors = []
     sumres     = [0.0,0.0,0.0,0.0]
     maxmax     = 0.0
+	
+	timelinedb = Dict()
+	
     for id in ids    
         targetID = id
         hiprecres = []
@@ -515,11 +571,16 @@ function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues,
         end
 
 
+
         dif = abs.(hiprecres - Float64.(loprecres))
         minval  = minimum(dif)
         maxval  = maximum(dif)
         medval  = median(dif)
         meanval = median(dif)
+		
+		if( fetchtimeline )
+			timelinedb[targetID] = dif
+		end
 
         push!(nodeerrors, (id, minval, maxval, medval, meanval))
         sumres[1] += minval
@@ -536,7 +597,37 @@ function GetErrorInTree(hiprecTree, loprecTree, inputSymbol, loprec_inputValues,
         SetResultForID( outputTree, id, maxval )
     end
 
+	if(fetchtimeline)
+		return outputTree,timelinedb
+	end
+	
     outputTree
+end
+
+function PlotASTError(tree, errordict, hiprec_inputs)
+    arr = []
+    for i in hiprec_inputs
+        push!(arr, i)
+    end
+
+    maxerror = 0.0
+    for entry in errordict
+        maxerror = max(maximum(entry[2]), maxerror)
+    end
+
+    ps = []
+    for entry in errordict
+        newplot = plot(arr, entry[2], title="OperatorID: $(entry[1])", ylims = (0,maxerror), legend=:none)
+        push!(ps, newplot)
+
+        idtree = GetSubTree(tree,entry[1]) 
+        helper = plot([0, 1], [0, 1], framestyle=:none, legend=:none, linecolor=:white)
+        annotate!(helper, [(0.0, 0.5, text(ToString(idtree), :left, 6) )])
+        push!(ps, helper)
+    end
+    
+    pAll = plot(ps..., layout = (Int64.(length(ps)/2),2), size=(2048, (length(ps)/2)*512), margin = 15.0mm) ##size=(2048,length(ps)*512)
+    pAll
 end
 
 
