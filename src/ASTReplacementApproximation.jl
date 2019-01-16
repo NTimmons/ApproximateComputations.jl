@@ -314,6 +314,11 @@ function InArray(arr, x)
 	return false
 end
 
+#########################
+## Extracting all instances from trees
+##
+##########
+
 function GetAllLeaves(nodes)
     variables = []
     for v in nodes
@@ -344,6 +349,28 @@ function GetAllSymbolsList(leafArray)
     variables
 end
 
+function GetOperators(tree)
+    nodes = GetAllTrees(tree)
+    operators = []
+    for v in nodes
+        if(typeof(v) == Operator)
+			if( !InArray(operators, v) )
+				push!(operators, v)
+			end
+        end
+    end
+    operators
+end
+
+function GetOperatorIDs(tree)
+    operators = GetOperators(tree)
+    ids = []
+    for op in operators
+        push!(ids, op.id)
+    end
+    
+    ids
+end
 
 
 ##################
@@ -374,7 +401,6 @@ function ReplaceTypeOfSpecifiedVariable(node::TreeMember, id, replacementtype)
                     ReplaceTypeOfSpecifiedVariable(node.leaves[i], id, replacementtype)
                 elseif (typeof(node.leaves[i]) == Variable)
                     if( node.leaves[i].id== id)
-                        @show "Replacing!"
                        node.leaves[i].var =  replacementtype(node.leaves[i].var)
                     end
                 end
@@ -397,7 +423,44 @@ function ReplaceConstantsWithVariables(node::TreeMember)
     end    
 end
 
+###############
+## Extracting computing information from tree
+##
+#####
 
+# Getting all the results for a specific id
+function GetResultForID(node, id)
+    if(node.id == id)
+        return node.result
+    elseif(typeof(node) == Operator)
+        for i in 1:length(node.leaves)
+            if(node.leaves[i] != nothing)
+                if(typeof(node.leaves[i]) == Operator)
+                     ret = GetResultForID(node.leaves[i], id)
+                     if(ret != "notfound")
+                        return ret
+                     end
+                end
+            end
+        end
+    end
+       
+    return "notfound"
+end
+
+function SetResultForID(node, id, val)
+    if(node.id == id)
+        node.result = val
+    elseif(typeof(node) == Operator)
+        for i in 1:length(node.leaves)
+            if(node.leaves[i] != nothing)
+                if(typeof(node.leaves[i]) == Operator)
+                     SetResultForID(node.leaves[i], id, val)
+                end
+            end
+        end
+    end
+end
 
 
 

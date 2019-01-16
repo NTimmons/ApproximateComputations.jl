@@ -39,4 +39,7 @@ export printtree, SetSymbolValue, ClearSymbolDict
 export GetAllLeaves, GetAllSymbols, GetAllSymbolsList
 export GetOverrides, GetConstructionFunction, @BuildOverrideFromArray
 export ReplaceConstantsWithVariables, ReplaceTypeOfSpecifiedVariable, ReplaceAllVariablesOfType
+export InArray, GetOperatorIDs, GetOperators
+export GetResultForID, SetResultForID
+
 end
