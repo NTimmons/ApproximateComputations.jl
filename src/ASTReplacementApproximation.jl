@@ -29,11 +29,10 @@ mutable struct Operator <: TreeMember
     leaves
     id
 	result
-	precomputed::Bool
-    Operator(x::Variable) = new(identity, [x]      , GetGlobalID(), "NotComputedYet", false)
-    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID(), "NotComputedYet", false)
-    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID(), "NotComputedYet", false)
-    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID(), "NotComputedYet", false)
+    Operator(x::Variable) = new(identity, [x]      , GetGlobalID(), "NoStoredData")
+    Operator(fun, x)      = new(fun     , [x]      , GetGlobalID(), "NoStoredData")
+    Operator(fun, x,y)    = new(fun     , [x, y]   , GetGlobalID(), "NoStoredData")
+    Operator(fun, x,y,z)  = new(fun     , [x, y, z], GetGlobalID(), "NoStoredData")
 end
 
 # Debug function to view the tree.
@@ -47,7 +46,7 @@ function printtree(node::TreeMember, level = 0)
     end
     
     if(typeof(node) == Operator)
-        println(string(outstr, "Function(", node.op, ") - (id:$(node.id)) - Result:", node.result))
+        println(string(outstr, "Function(", node.op, ") - (id:$(node.id)) - StoredData:", node.result))
         for leaf in node.leaves        
             if(leaf != nothing)
                 if(typeof(leaf) <: TreeMember)
