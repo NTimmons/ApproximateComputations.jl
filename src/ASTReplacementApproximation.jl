@@ -387,6 +387,11 @@ function GetAllSymbols(node)
     GetAllSymbolsList(GetAllLeaves(node))
 end
 
+function GetAllSymbols(tree::TreeMember)
+	nodes = GetAllTrees(tree)
+    GetAllSymbolsList(GetAllLeaves(nodes))
+end
+
 function GetAllSymbolsList(leafArray)
     variables = []
     for v in leafArray
@@ -629,6 +634,49 @@ function PlotASTError(tree, errordict, hiprec_inputs)
     pAll = plot(ps..., layout = (Int64.(length(ps)/2),2), size=(2048, (length(ps)/2)*512), margin = 15.0mm) ##size=(2048,length(ps)*512)
     pAll
 end
+
+
+############################
+## Source Code Generation for AST Tree
+##
+#######
+
+function TreeToFunction(node::TreeMember, name)
+    symbols = GetAllSymbols(node)
+    funcbody = TreeToFunctionLeaf(node)
+    parsed = eval(Meta.parse("$(name)($(symbols...))= " * funcbody))
+end
+function TreeToFunctionLeaf(node::TreeMember)
+    s = ""
+    if(typeof(node) == Operator)
+        leafcount = length(node.leaves)
+        if( leafcount == 1)
+            s = string(s, "(", node.op, TreeToFunctionLeaf(node.leaves[1]), ")" )
+        elseif (leafcount == 2)
+            s = string(s, "(", TreeToFunctionLeaf(node.leaves[1]), node.op, TreeToFunctionLeaf(node.leaves[2]), ")")
+        else
+            s = string(s, node.op, "(")
+            for i in 1:length(node.leaves)
+                if(node.leaves[i] != nothing)
+                    if(typeof(node.leaves[i]) <: TreeMember)
+                        s = string(s, TreeToFunctionLeaf(node.leaves[i]) )
+                    else
+                        s = string(s, node.leaves[i])
+                    end
+
+                    if(i != length(node.leaves))
+                        s = string(s, ",")
+                    end
+
+                end
+            end
+            s = string(s, ")")
+        end
+    else
+        s = string(s, node.var)
+    end
+    s
+end   
 
 
 

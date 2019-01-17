@@ -45,4 +45,5 @@ export GetErrorInTree
 export GetSubTree
 export ToString
 export PlotASTError
+export TreeToFunction, TreeToFunctionLeaf
 end
