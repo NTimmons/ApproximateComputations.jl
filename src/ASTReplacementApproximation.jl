@@ -678,6 +678,53 @@ function TreeToFunctionLeaf(node::TreeMember)
     s
 end   
 
+###############################
+## Tree Comparison
+##
+#######
 
+function TreeComparison(tree_a::TreeMember, tree_b::TreeMember, inputsa, inputsb)
+    
+    # Check that the input length is valid
+    if(length(inputsa) != length(inputsb))
+       throw(ErrorException("Error:Comparison ranges must be of equal length!")) 
+    end
+    
+    # Check that the input array is of type Array{Pair{Symbol, Any}, 1}
+    ########TODO########
+    
+    # Initialise a results array
+    resulta = []
+    resultb = []
+    
+    # Push the results into the array
+    for input in inputsa
+        SetSymbolValue(input[1], input[2])
+        push!(resulta,EmulateTree(tree_a))
+    end
+    
+    for input in inputsb
+        SetSymbolValue(input[1], input[2])
+        push!(resultb,EmulateTree(tree_b))
+    end
+    
+    # Calculate the error
+    diff      = abs.(resulta - resultb)
+    maxerr    = maximum(diff)
+    minerr    = minimum(diff)
+    medianerr = median(diff)
+    meanerr   = mean(diff)
+    
+    # return results
+    (minerr, maxerr, medianerr, meanerr, diff)
+    
+end
+
+function PrintTreeComparisonError(error)
+    println("Min    Error $(error[1])")
+    println("Max    Error $(error[2])")
+    println("Median Error $(error[3])")
+    println("Mean   Error $(error[4])")  
+end
 
 

@@ -46,4 +46,5 @@ export GetSubTree
 export ToString
 export PlotASTError
 export TreeToFunction, TreeToFunctionLeaf
+export PrintTreeComparisonError, TreeComparison
 end
