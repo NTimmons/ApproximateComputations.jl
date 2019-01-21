@@ -561,7 +561,14 @@ function GetApproximatePolyFunction_Eval(targetFunction, inputs64, highResResult
     return fitfast_let_float64
 end
 
-function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; sampleCount = 1000, retDataFrame=false)
+function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; 
+				sampleCount = 1000, retDataFrame=false, testTypes=[Float32, Float64],
+				polynomialLet_Enabled     	= true,
+				polynomialEval_Enabled    	= false,
+				pateFunctionsLet_Enabled  	= false,
+				pateFunctionsEval_Enabled 	= false,
+				orderFunArray     			= [()->7, ()->9, ()->11, ()->13, ()->15, ()->17, ()->19],
+				orderFunPateArray 			= [()->2, ()->3, ()->4, ()->5] )
     
     # Generation parameters and dataframe for evaluating the results.
     df = DataFrame( Name      = String[], 
@@ -577,16 +584,11 @@ function GenerateAllApproximationFunctions(targetfunction, minValue, maxValue; s
     inputs64       = Float64.(range(minValue, stop=maxValue, length=sampleCount))
     highResResults = targetfunction.(inputs64)
 
-    typelist          = [Float64] #[Float32, Float64]
+    typelist          = testTypes
 
-    orderFunArray     = [()->7, ()->9, ()->11, ()->13, ()->15, ()->17, ()->19]
-    orderFunPateArray = [()->2, ()->3, ()->4, ()->5]
-
-    polynomialLet_Enabled     = true
-    polynomialEval_Enabled    = false
-    pateFunctionsLet_Enabled  = false
-    pateFunctionsEval_Enabled = false
-    
+    #orderFunArray     = [()->7, ()->9, ()->11, ()->13, ()->15, ()->17, ()->19]
+    #orderFunPateArray = [()->2, ()->3, ()->4, ()->5]
+ 
     polynomialFunctions       = []
     polynomialFunctions_eval  = []
     pateFunctions_eval        = []
