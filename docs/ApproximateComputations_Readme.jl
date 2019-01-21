@@ -30,22 +30,22 @@ contained_value = Get(approx_param)
 # with 5000 samples set with the `sampleCount` option and a request for a table of the results with
 # the `retDataFrame` option.
 using ApproximateComputations
-newFunctionsAndInformation, tableOfResults = GenerateAllApproximationFunctions(sin, 0.001, 1.57, sampleCount=5000, retDataFrame=true)
+newFunctionsAndInformation, tableOfResults = GenerateAllApproximationFunctions(sin, 0.001, 1.57, sampleCount=5000, retDataFrame=true);
 
 # When we display the results you will see the different precision, order and methods of generation.
 # By default only a limited set are used. If you look into the documentation you will see the flags
 # for different types of curve generation.
 tableOfResults
 
-#2) Filter the generated functions to select the fastest executing function within our error constraint:
+# 2) Filter the generated functions to select the fastest executing function within our error constraint:
 a = GetFastestAcceptable(newFunctionsAndInformation, meanErrorLimit=0.00000001)
 println(GetFunctionName(a))  # -> returns sin_PolyLet9_Float64bit
 
 
-#3) Store the function for use:
+# 3) Store the function for use:
 approxsin = a.generatedFunction
 
-#4) Compare to accurate function:
+# 4) Compare to accurate function:
 approxResult = approxsin(1.0) # -> Approximation{Float64}(0.8414709848311571)
 realResult = sin(1.0)   # -> {Float64} (0.8414709848078965)
 
